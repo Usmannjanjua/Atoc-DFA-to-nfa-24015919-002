@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<!--
+  NFA to DFA Converter
+  
+  This web application converts Non-deterministic Finite Automata (NFA) to 
+  Deterministic Finite Automata (DFA) and minimizes the resulting DFA.
+  
+  Features:
+  - Interactive NFA input with transitions, initial and final states
+  - Visual representation of NFA and DFA using graphviz
+  - Step-by-step DFA conversion visualization
+-->
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NFA to DFA | AToC Project</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="./style.css" rel="stylesheet" />
+</head>
+
+<body>
+  <div
+    class="container my-4 border border-muted rounded-3 p-3 d-flex flex-column justify-content-center align-items-center bg-light shadow-sm">
+    <h2 class="m-b">
+      <span class="text-danger">NFA</span> to <span class="text-success">DFA</span>
+    </h2>
+
+    <div
+      class="text-center mt-2 pt-2 px-5 border border-top-1 border-muted border-bottom-0 border-start-0 border-end-0">
+      <small class="text-muted">
+        <small>A Project By:&nbsp;</small>
+        Muhammad Usman Janjua
+        <br />
+        24015919-002
+      </small>
+    </div>
+  </div>
+
+  <div class="container my-4 border border-muted rounded-3 p-3">
+    <h5 class="card-title mb-2">Instructions</h5>
+    <ul class="mb-0" id="instructions">
+      <li>The left-hand current state of each transition must be filled in.</li>
+      <li>[ λ ] - An empty text field corresponds to lambda (or epsilon).</li>
+      <li>The finite set of states (Q) and the alphabet (Σ) will be generated
+        automatically.</li>
+      <li>Inputs are case-sensitive and whitespace is not ignored.</li>
+      <li>All entries should be delimited by a comma, if permitted.</li>
+    </ul>
+  </div>
+
+  <!-- NFA Input Section -->
+  <section class="container border border-muted rounded-3 p-3 mb-4">
+    <h2 class="fs-4">Input the NFA</h2>
+    <p class="fs-6 text-muted mb-0">
+      Enter the non-deterministic automata (NFA) transitions here, then define
+      the final states and initial state.
+    </p>
+
+    <div class="main-part">
+      <form id="nfa" class="mt-0 needs-validation" novalidate>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <div class="form-group d-flex flex-column align-items-start">
+              <label for="initialStateInput" class="form-label">Initial State</label>
+              <input type="text" class="form-control" id="initialStateInput" required />
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label for="finalStatesInput" class="form-label">Final States</label>
+            <input type="text" class="form-control" id="finalStatesInput" required />
+          </div>
+        </div>
+
+        <div id="nfa-transitions">
+          <div class="production-row d-flex align-items-center mb-2">
+            <span class="me-2">δ(</span>
+            <input type="text" class="form-control current-state-input me-2" required />
+            <span class="me-2">,</span>
+            <input type="text" class="form-control input-symbol me-2" placeholder="λ" />
+            <span class="me-2">)=</span>
+            <input type="text" class="form-control next-states me-2" required />
+            <button type="button" class="btn btn-outline-danger remove-button" title="Remove this transition">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <div class="d-flex justify-content-center gap-2">
+        <button id="new-transition" type="button" class="btn btn-outline-dark">
+          <i class="fas fa-plus me-2"></i>Click Here Or Press "Enter" For A New Transition
+        </button>
+
+        <button type="button" class="btn btn-outline-danger" id="resetBtn" title="Reset the current NFA">
+          <i class="fas fa-undo me-2"></i>Reset
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Verification Section -->
+  <section class="container border border-muted rounded-3 p-3 my-4" id="verification-section">
+    <h2 id="verify-update-debug" class="text-primary fs-4">Verify</h2>
+    <p>This is the NFA you have input above:</p>
+    <div id="current-nfa-status"></div>
+    <div id="current-nfa" class="graph-container"></div>
+  </section>
+
+  <!-- DFA Conversion Section -->
+  <section class="container border border-muted rounded-3 p-3 my-4" id="dfa-conversion-section">
+    <h2 class="fs-4 text-danger">Equivalent DFA</h2>
+    <div class="row">
+      <div class="col-lg">
+        <div id="current-dfa-status"></div>
+        <div id="current-dfa" class="graph-container"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DFA Transition Table Section -->
+  <section class="container border border-muted rounded-3 p-3 my-4" id="dfa-transition-table-section">
+    <h2 class="fs-4 text-success mb-3">DFA Transition Table</h2>
+    <div class="row">
+      <div class="col-lg">
+        <div id="dfa-transition-table"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Font Awesome -->
+  <script src="https://kit.fontawesome.com/17ac6b8a5c.js" crossorigin="anonymous"></script>
+
+  <!-- Core dependencies -->
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Visualization dependencies -->
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <script src="https://unpkg.com/viz.js@1.8.1/viz.js" type="javascript/worker"></script>
+  <script src="https://unpkg.com/d3-graphviz@2.6.1/build/d3-graphviz.js"></script>
+
+  <!-- Application scripts -->
+  <script src="./engine.js"></script>
+  <script src="./dom.js"></script>
+</body>
+
+</html>
